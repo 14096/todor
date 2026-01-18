@@ -4,7 +4,7 @@
 
 A terminal-based todo application built with Rust and Ratatui.
 
-## SCRENNSHOTS
+## SCREENSHOTS
 
 ![01](./assets/01.png)
 ![02](./assets/02.png)

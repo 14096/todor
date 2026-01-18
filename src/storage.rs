@@ -10,7 +10,6 @@ fn get_config_dir() -> Result<PathBuf> {
 
     let config_dir = Path::new(&home_dir).join(".config").join("todor");
 
-    // Create the directory if it doesn't exist
     if !config_dir.exists() {
         fs::create_dir_all(&config_dir)?;
     }
