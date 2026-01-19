@@ -12,6 +12,7 @@ use std::io;
 pub enum InputMode {
     Normal,
     AddingTodo,
+    EditingTodo,
 }
 
 #[derive(Debug, PartialEq)]
@@ -87,6 +88,7 @@ pub struct App {
     pub todo_form: TodoForm,
     pub should_quit: bool,
     pub main_split_percentage: u16,
+    pub editing_todo_id: Option<usize>,
 }
 
 impl App {
@@ -98,6 +100,7 @@ impl App {
             todo_form: TodoForm::default(),
             should_quit: false,
             main_split_percentage: 40,
+            editing_todo_id: None,
         })
     }
 
@@ -130,6 +133,7 @@ impl App {
                     match self.input_mode {
                         InputMode::Normal => self.handle_normal_input(key.code),
                         InputMode::AddingTodo => self.handle_popup_input(key.code),
+                        InputMode::EditingTodo => self.handle_popup_input(key.code),
                     }
                 }
             }
@@ -147,6 +151,17 @@ impl App {
             KeyCode::Char('a') => {
                 self.input_mode = InputMode::AddingTodo;
                 self.todo_form.clear();
+                self.editing_todo_id = None;
+            }
+            KeyCode::Char('e') => {
+                if let Some(selected_idx) = self.todo_list.selected {
+                    if let Some(todo) = self.todo_list.todos.get(selected_idx) {
+                        let todo_clone = todo.clone();
+                        self.input_mode = InputMode::EditingTodo;
+                        self.editing_todo_id = Some(todo_clone.id);
+                        self.populate_form_with_todo(&todo_clone);
+                    }
+                }
             }
             KeyCode::Up | KeyCode::Char('k') => self.todo_list.select_previous(),
             KeyCode::Down | KeyCode::Char('j') => self.todo_list.select_next(),
@@ -169,6 +184,7 @@ impl App {
             KeyCode::Esc => {
                 self.todo_form.clear();
                 self.input_mode = InputMode::Normal;
+                self.editing_todo_id = None;
             }
             KeyCode::Tab => {
                 self.todo_form.next_field();
@@ -196,14 +212,24 @@ impl App {
                         Some(self.todo_form.category.trim().to_string())
                     };
 
-                    self.create_todo_from_form(category);
+                    match self.input_mode {
+                        InputMode::AddingTodo => {
+                            self.create_todo_from_form(category);
 
-                    if self.todo_list.selected.is_none() && !self.todo_list.todos.is_empty() {
-                        self.todo_list.selected = Some(self.todo_list.todos.len() - 1);
+                            if self.todo_list.selected.is_none() && !self.todo_list.todos.is_empty()
+                            {
+                                self.todo_list.selected = Some(self.todo_list.todos.len() - 1);
+                            }
+                        }
+                        InputMode::EditingTodo => {
+                            self.update_todo_from_form(category);
+                        }
+                        _ => {}
                     }
 
                     self.todo_form.clear();
                     self.input_mode = InputMode::Normal;
+                    self.editing_todo_id = None;
                 }
             }
             KeyCode::Backspace => {
@@ -229,5 +255,26 @@ impl App {
 
         self.todo_list.todos.push(todo);
         self.todo_list.next_id += 1;
+    }
+
+    fn populate_form_with_todo(&mut self, todo: &crate::todo::Todo) {
+        self.todo_form.title = todo.title.clone();
+        self.todo_form.category = todo.category.clone().unwrap_or_default();
+        self.todo_form.description = todo.description.clone().unwrap_or_default();
+        self.todo_form.current_field = PopupField::Title;
+    }
+
+    fn update_todo_from_form(&mut self, category: Option<String>) {
+        if let Some(editing_id) = self.editing_todo_id {
+            if let Some(todo) = self.todo_list.todos.iter_mut().find(|t| t.id == editing_id) {
+                todo.title = self.todo_form.title.trim().to_string();
+                todo.category = category;
+                todo.description = if self.todo_form.description.trim().is_empty() {
+                    None
+                } else {
+                    Some(self.todo_form.description.trim().to_string())
+                };
+            }
+        }
     }
 }

@@ -27,12 +27,10 @@ run: build
 .PHONY: fmt
 fmt:
 	clear
-	@echo "Formatting code"
-	$(CARGO) fmt
+	@$(CARGO) fmt
 
 .PHONY: test
 test:
-	@echo "Running tests"
 	$(CARGO) test
 
 .PHONY: clean
@@ -41,7 +39,6 @@ clean:
 
 .PHONY: doc
 doc:
-	@echo "Generating documentation..."
 	$(CARGO) doc --open
 
 .PHONY: help

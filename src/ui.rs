@@ -23,7 +23,7 @@ pub fn draw(f: &mut Frame, app: &App) {
     draw_main_content(f, chunks[1], app);
     draw_footer(f, chunks[2], app);
 
-    if app.input_mode == InputMode::AddingTodo {
+    if app.input_mode == InputMode::AddingTodo || app.input_mode == InputMode::EditingTodo {
         draw_add_todo_popup(f, app);
     }
 }
@@ -156,9 +156,11 @@ fn draw_details(f: &mut Frame, area: Rect, app: &App) {
 fn draw_footer(f: &mut Frame, area: Rect, app: &App) {
     let help_text = match app.input_mode {
         InputMode::Normal => {
-            "Controls: ↑/↓/k/j Navigate | Space Toggle | a Add | d Delete | [/] Resize | q Quit"
+            "Controls: ↑/↓/k/j Navigate | Space Toggle | a Add | e Edit | d Delete | [/] Resize | q Quit"
         }
-        InputMode::AddingTodo => "Tab/Shift+Tab/↑/↓: Navigate fields | Enter: Save | Esc: Cancel",
+        InputMode::AddingTodo | InputMode::EditingTodo => {
+            "Tab/Shift+Tab/↑/↓: Navigate fields | Enter: Save | Esc: Cancel"
+        }
     };
 
     let footer = Paragraph::new(help_text)
@@ -174,7 +176,11 @@ fn draw_add_todo_popup(f: &mut Frame, app: &App) {
     f.render_widget(Clear, area);
 
     let popup_block = Block::default()
-        .title("Add new")
+        .title(match app.input_mode {
+            InputMode::AddingTodo => "Add new",
+            InputMode::EditingTodo => "Edit todo",
+            _ => "Add new",
+        })
         .borders(Borders::ALL)
         .style(Style::default().bg(Color::Black));
 
