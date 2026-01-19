@@ -11,18 +11,7 @@ pub struct Todo {
 }
 
 impl Todo {
-    pub fn new(id: usize, title: String) -> Self {
-        Self {
-            id,
-            title,
-            category: None,
-            description: None,
-            completed: false,
-            created_at: chrono::Utc::now(),
-        }
-    }
-
-    pub fn new_with_category(id: usize, title: String, category: Option<String>) -> Self {
+    pub fn new(id: usize, title: String, category: Option<String>) -> Self {
         Self {
             id,
             title,
@@ -50,14 +39,12 @@ impl TodoList {
         Self::default()
     }
 
-    pub fn add_todo(&mut self, title: String) {
-        let todo = Todo::new(self.next_id, title);
-        self.todos.push(todo);
-        self.next_id += 1;
+    pub fn add(&mut self, title: String) {
+        self.add_todo(title, None);
     }
 
-    pub fn add_todo_with_category(&mut self, title: String, category: Option<String>) {
-        let todo = Todo::new_with_category(self.next_id, title, category);
+    pub fn add_todo(&mut self, title: String, category: Option<String>) {
+        let todo = Todo::new(self.next_id, title, category);
         self.todos.push(todo);
         self.next_id += 1;
     }
@@ -120,7 +107,7 @@ mod tests {
 
     #[test]
     fn test_todo_creation() {
-        let todo = Todo::new(1, "Test todo".to_string());
+        let todo = Todo::new(1, "Test todo".to_string(), None);
         assert_eq!(todo.id, 1);
         assert_eq!(todo.title, "Test todo");
         assert_eq!(todo.category, None);
@@ -130,7 +117,7 @@ mod tests {
 
     #[test]
     fn test_todo_with_category() {
-        let todo = Todo::new_with_category(1, "Test todo".to_string(), Some("Work".to_string()));
+        let todo = Todo::new(1, "Test todo".to_string(), Some("Work".to_string()));
         assert_eq!(todo.id, 1);
         assert_eq!(todo.title, "Test todo");
         assert_eq!(todo.category, Some("Work".to_string()));
@@ -139,7 +126,7 @@ mod tests {
 
     #[test]
     fn test_todo_toggle_completed() {
-        let mut todo = Todo::new(1, "Test todo".to_string());
+        let mut todo = Todo::new(1, "Test todo".to_string(), None);
         assert!(!todo.completed);
 
         todo.toggle_completed();
@@ -160,7 +147,7 @@ mod tests {
     #[test]
     fn test_add_todo() {
         let mut todo_list = TodoList::new();
-        todo_list.add_todo("First todo".to_string());
+        todo_list.add("First todo".to_string());
 
         assert_eq!(todo_list.todos.len(), 1);
         assert_eq!(todo_list.todos[0].title, "First todo");
@@ -171,8 +158,8 @@ mod tests {
     #[test]
     fn test_add_multiple_todos() {
         let mut todo_list = TodoList::new();
-        todo_list.add_todo("First todo".to_string());
-        todo_list.add_todo("Second todo".to_string());
+        todo_list.add("First todo".to_string());
+        todo_list.add("Second todo".to_string());
 
         assert_eq!(todo_list.todos.len(), 2);
         assert_eq!(todo_list.todos[0].id, 0);
@@ -183,7 +170,7 @@ mod tests {
     #[test]
     fn test_add_todo_with_category() {
         let mut todo_list = TodoList::new();
-        todo_list.add_todo_with_category("Work task".to_string(), Some("Work".to_string()));
+        todo_list.add_todo("Work task".to_string(), Some("Work".to_string()));
 
         assert_eq!(todo_list.todos.len(), 1);
         assert_eq!(todo_list.todos[0].title, "Work task");
@@ -193,9 +180,9 @@ mod tests {
     #[test]
     fn test_selection_navigation() {
         let mut todo_list = TodoList::new();
-        todo_list.add_todo("Todo 1".to_string());
-        todo_list.add_todo("Todo 2".to_string());
-        todo_list.add_todo("Todo 3".to_string());
+        todo_list.add("Todo 1".to_string());
+        todo_list.add("Todo 2".to_string());
+        todo_list.add("Todo 3".to_string());
 
         // Initially no selection
         assert_eq!(todo_list.selected, None);
@@ -224,7 +211,7 @@ mod tests {
     #[test]
     fn test_get_selected() {
         let mut todo_list = TodoList::new();
-        todo_list.add_todo("Selected todo".to_string());
+        todo_list.add("Selected todo".to_string());
         todo_list.selected = Some(0);
 
         let selected = todo_list.get_selected();
@@ -238,7 +225,7 @@ mod tests {
     #[test]
     fn test_toggle_selected() {
         let mut todo_list = TodoList::new();
-        todo_list.add_todo("Toggle todo".to_string());
+        todo_list.add("Toggle todo".to_string());
         todo_list.selected = Some(0);
 
         assert!(!todo_list.todos[0].completed);
@@ -253,9 +240,9 @@ mod tests {
     #[test]
     fn test_remove_selected() {
         let mut todo_list = TodoList::new();
-        todo_list.add_todo("Todo 1".to_string());
-        todo_list.add_todo("Todo 2".to_string());
-        todo_list.add_todo("Todo 3".to_string());
+        todo_list.add("Todo 1".to_string());
+        todo_list.add("Todo 2".to_string());
+        todo_list.add("Todo 3".to_string());
         todo_list.selected = Some(1);
 
         let removed = todo_list.remove_selected();
@@ -269,7 +256,7 @@ mod tests {
     #[test]
     fn test_remove_last_item() {
         let mut todo_list = TodoList::new();
-        todo_list.add_todo("Only todo".to_string());
+        todo_list.add("Only todo".to_string());
         todo_list.selected = Some(0);
 
         let removed = todo_list.remove_selected();
@@ -282,7 +269,7 @@ mod tests {
     #[test]
     fn test_remove_with_no_selection() {
         let mut todo_list = TodoList::new();
-        todo_list.add_todo("Todo 1".to_string());
+        todo_list.add("Todo 1".to_string());
         todo_list.selected = None;
 
         let removed = todo_list.remove_selected();

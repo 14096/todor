@@ -1,10 +1,7 @@
-pub mod app;
-pub mod storage;
-pub mod todo;
-pub mod ui;
+pub mod modules;
 
 use anyhow::Result;
-pub use app::App;
+pub use modules::app::App;
 
 pub fn run() -> Result<()> {
     let mut app = App::new()?;

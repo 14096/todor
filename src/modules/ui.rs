@@ -6,7 +6,7 @@ use ratatui::{
     widgets::{Block, Borders, Clear, List, ListItem, ListState, Paragraph, Wrap},
 };
 
-use crate::app::{App, InputMode, PopupField};
+use crate::modules::app::{App, InputMode, PopupField};
 
 pub fn draw(f: &mut Frame, app: &App) {
     let chunks = Layout::default()
@@ -23,7 +23,7 @@ pub fn draw(f: &mut Frame, app: &App) {
     draw_main_content(f, chunks[1], app);
     draw_footer(f, chunks[2], app);
 
-    if app.input_mode == InputMode::AddingTodo || app.input_mode == InputMode::EditingTodo {
+    if app.input_mode == InputMode::Add || app.input_mode == InputMode::Edit {
         draw_add_todo_popup(f, app);
     }
 }
@@ -43,8 +43,8 @@ fn draw_main_content(f: &mut Frame, area: Rect, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Percentage(app.main_split_percentage),
-            Constraint::Percentage(100 - app.main_split_percentage),
+            Constraint::Percentage(app.split_percentage),
+            Constraint::Percentage(100 - app.split_percentage),
         ])
         .split(area);
 
@@ -158,7 +158,7 @@ fn draw_footer(f: &mut Frame, area: Rect, app: &App) {
         InputMode::Normal => {
             "Controls: ↑/↓/k/j Navigate | Space Toggle | a Add | e Edit | d Delete | [/] Resize | q Quit"
         }
-        InputMode::AddingTodo | InputMode::EditingTodo => {
+        InputMode::Add | InputMode::Edit => {
             "Tab/Shift+Tab/↑/↓: Navigate fields | Enter: Save | Esc: Cancel"
         }
     };
@@ -177,8 +177,8 @@ fn draw_add_todo_popup(f: &mut Frame, app: &App) {
 
     let popup_block = Block::default()
         .title(match app.input_mode {
-            InputMode::AddingTodo => "Add new",
-            InputMode::EditingTodo => "Edit todo",
+            InputMode::Add => "Add new",
+            InputMode::Edit => "Edit todo",
             _ => "Add new",
         })
         .borders(Borders::ALL)

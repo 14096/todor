@@ -1,4 +1,4 @@
-use crate::{storage, todo::TodoList, ui};
+use crate::modules::{storage, todo::TodoList, ui};
 use anyhow::Result;
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
@@ -11,8 +11,8 @@ use std::io;
 #[derive(Debug, PartialEq)]
 pub enum InputMode {
     Normal,
-    AddingTodo,
-    EditingTodo,
+    Add,
+    Edit,
 }
 
 #[derive(Debug, PartialEq)]
@@ -86,9 +86,9 @@ pub struct App {
     pub todo_list: TodoList,
     pub input_mode: InputMode,
     pub todo_form: TodoForm,
-    pub should_quit: bool,
-    pub main_split_percentage: u16,
     pub editing_todo_id: Option<usize>,
+    pub split_percentage: u16,
+    pub quit: bool,
 }
 
 impl App {
@@ -98,9 +98,9 @@ impl App {
             todo_list,
             input_mode: InputMode::Normal,
             todo_form: TodoForm::default(),
-            should_quit: false,
-            main_split_percentage: 40,
             editing_todo_id: None,
+            split_percentage: 40,
+            quit: false,
         })
     }
 
@@ -132,13 +132,13 @@ impl App {
                 if key.kind == KeyEventKind::Press {
                     match self.input_mode {
                         InputMode::Normal => self.handle_normal_input(key.code),
-                        InputMode::AddingTodo => self.handle_popup_input(key.code),
-                        InputMode::EditingTodo => self.handle_popup_input(key.code),
+                        InputMode::Add => self.handle_popup_input(key.code),
+                        InputMode::Edit => self.handle_popup_input(key.code),
                     }
                 }
             }
 
-            if self.should_quit {
+            if self.quit {
                 break;
             }
         }
@@ -147,9 +147,9 @@ impl App {
 
     fn handle_normal_input(&mut self, key_code: KeyCode) {
         match key_code {
-            KeyCode::Char('q') => self.should_quit = true,
+            KeyCode::Char('q') => self.quit = true,
             KeyCode::Char('a') => {
-                self.input_mode = InputMode::AddingTodo;
+                self.input_mode = InputMode::Add;
                 self.todo_form.clear();
                 self.editing_todo_id = None;
             }
@@ -157,7 +157,7 @@ impl App {
                 if let Some(selected_idx) = self.todo_list.selected {
                     if let Some(todo) = self.todo_list.todos.get(selected_idx) {
                         let todo_clone = todo.clone();
-                        self.input_mode = InputMode::EditingTodo;
+                        self.input_mode = InputMode::Edit;
                         self.editing_todo_id = Some(todo_clone.id);
                         self.populate_form_with_todo(&todo_clone);
                     }
@@ -170,10 +170,10 @@ impl App {
                 self.todo_list.remove_selected();
             }
             KeyCode::Char('[') => {
-                self.main_split_percentage = self.main_split_percentage.saturating_sub(5).max(10);
+                self.split_percentage = self.split_percentage.saturating_sub(5).max(10);
             }
             KeyCode::Char(']') => {
-                self.main_split_percentage = (self.main_split_percentage + 5).min(90);
+                self.split_percentage = (self.split_percentage + 5).min(90);
             }
             _ => {}
         }
@@ -213,7 +213,7 @@ impl App {
                     };
 
                     match self.input_mode {
-                        InputMode::AddingTodo => {
+                        InputMode::Add => {
                             self.create_todo_from_form(category);
 
                             if self.todo_list.selected.is_none() && !self.todo_list.todos.is_empty()
@@ -221,7 +221,7 @@ impl App {
                                 self.todo_list.selected = Some(self.todo_list.todos.len() - 1);
                             }
                         }
-                        InputMode::EditingTodo => {
+                        InputMode::Edit => {
                             self.update_todo_from_form(category);
                         }
                         _ => {}
@@ -243,7 +243,7 @@ impl App {
     }
 
     fn create_todo_from_form(&mut self, category: Option<String>) {
-        let mut todo = crate::todo::Todo::new_with_category(
+        let mut todo = crate::modules::todo::Todo::new(
             self.todo_list.next_id,
             self.todo_form.title.trim().to_string(),
             category,
@@ -257,7 +257,7 @@ impl App {
         self.todo_list.next_id += 1;
     }
 
-    fn populate_form_with_todo(&mut self, todo: &crate::todo::Todo) {
+    fn populate_form_with_todo(&mut self, todo: &crate::modules::todo::Todo) {
         self.todo_form.title = todo.title.clone();
         self.todo_form.category = todo.category.clone().unwrap_or_default();
         self.todo_form.description = todo.description.clone().unwrap_or_default();

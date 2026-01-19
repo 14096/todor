@@ -1,4 +1,4 @@
-use crate::todo::TodoList;
+use crate::modules::todo::TodoList;
 use anyhow::Result;
 use std::fs;
 use std::path::{Path, PathBuf};
@@ -27,7 +27,7 @@ pub fn load_todos() -> Result<TodoList> {
 
     if data_file.exists() {
         let data = fs::read_to_string(&data_file)?;
-        let todos: Vec<crate::todo::Todo> = serde_json::from_str(&data)?;
+        let todos: Vec<crate::modules::todo::Todo> = serde_json::from_str(&data)?;
 
         let mut todo_list = TodoList::new();
         for todo in todos {
