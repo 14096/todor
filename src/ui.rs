@@ -42,7 +42,10 @@ fn draw_header(f: &mut Frame, area: Rect) {
 fn draw_main_content(f: &mut Frame, area: Rect, app: &App) {
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([Constraint::Percentage(60), Constraint::Percentage(40)])
+        .constraints([
+            Constraint::Percentage(app.main_split_percentage),
+            Constraint::Percentage(100 - app.main_split_percentage),
+        ])
         .split(area);
 
     let items: Vec<ListItem> = app
@@ -153,7 +156,7 @@ fn draw_details(f: &mut Frame, area: Rect, app: &App) {
 fn draw_footer(f: &mut Frame, area: Rect, app: &App) {
     let help_text = match app.input_mode {
         InputMode::Normal => {
-            "Controls: ↑/↓/k/j Navigate | Space Toggle | a Add | d Delete | q Quit"
+            "Controls: ↑/↓/k/j Navigate | Space Toggle | a Add | d Delete | [/] Resize | q Quit"
         }
         InputMode::AddingTodo => "Tab/Shift+Tab/↑/↓: Navigate fields | Enter: Save | Esc: Cancel",
     };

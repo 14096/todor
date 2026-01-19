@@ -86,6 +86,7 @@ pub struct App {
     pub input_mode: InputMode,
     pub todo_form: TodoForm,
     pub should_quit: bool,
+    pub main_split_percentage: u16,
 }
 
 impl App {
@@ -96,6 +97,7 @@ impl App {
             input_mode: InputMode::Normal,
             todo_form: TodoForm::default(),
             should_quit: false,
+            main_split_percentage: 40,
         })
     }
 
@@ -151,6 +153,12 @@ impl App {
             KeyCode::Char(' ') => self.todo_list.toggle_selected(),
             KeyCode::Char('d') => {
                 self.todo_list.remove_selected();
+            }
+            KeyCode::Char('[') => {
+                self.main_split_percentage = self.main_split_percentage.saturating_sub(5).max(10);
+            }
+            KeyCode::Char(']') => {
+                self.main_split_percentage = (self.main_split_percentage + 5).min(90);
             }
             _ => {}
         }
