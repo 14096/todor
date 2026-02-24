@@ -40,13 +40,19 @@ fn draw_header(f: &mut Frame, area: Rect) {
 }
 
 fn draw_main_content(f: &mut Frame, area: Rect, app: &App) {
-    let chunks = Layout::default()
-        .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage(app.split_percentage),
-            Constraint::Percentage(100 - app.split_percentage),
-        ])
-        .split(area);
+    let chunks = match app.show_details {
+        true => Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([
+                Constraint::Percentage(app.split_percentage),
+                Constraint::Percentage(100 - app.split_percentage),
+            ])
+            .split(area),
+        false => Layout::default()
+            .direction(Direction::Horizontal)
+            .constraints([Constraint::Percentage(100)])
+            .split(area),
+    };
 
     let items: Vec<ListItem> = app
         .todo_list
@@ -91,7 +97,9 @@ fn draw_main_content(f: &mut Frame, area: Rect, app: &App) {
     list_state.select(app.todo_list.selected);
     f.render_stateful_widget(list, chunks[0], &mut list_state);
 
-    draw_details(f, chunks[1], app);
+    if app.show_details {
+        draw_details(f, chunks[1], app);
+    }
 }
 
 fn draw_details(f: &mut Frame, area: Rect, app: &App) {
@@ -156,7 +164,7 @@ fn draw_details(f: &mut Frame, area: Rect, app: &App) {
 fn draw_footer(f: &mut Frame, area: Rect, app: &App) {
     let help_text = match app.input_mode {
         InputMode::Normal => {
-            "Controls: ↑/↓/k/j Navigate | Space Toggle | a Add | e Edit | d Delete | [/] Resize | q Quit"
+            "Controls: ↑/↓/k/j Navigate | Space Toggle | a Add | e Edit | h Details | d Delete | [/] Resize | q Quit"
         }
         InputMode::Add | InputMode::Edit => {
             "Tab/Shift+Tab/↑/↓: Navigate fields | Enter: Save | Esc: Cancel"
@@ -164,7 +172,11 @@ fn draw_footer(f: &mut Frame, area: Rect, app: &App) {
     };
 
     let footer = Paragraph::new(help_text)
-        .style(Style::default().fg(Color::Gray))
+        .style(
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD),
+        )
         .block(Block::default().borders(Borders::ALL));
 
     f.render_widget(footer, area);

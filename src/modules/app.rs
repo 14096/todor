@@ -88,6 +88,7 @@ pub struct App {
     pub todo_form: TodoForm,
     pub editing_todo_id: Option<usize>,
     pub split_percentage: u16,
+    pub show_details: bool,
     pub quit: bool,
 }
 
@@ -100,6 +101,7 @@ impl App {
             todo_form: TodoForm::default(),
             editing_todo_id: None,
             split_percentage: 40,
+            show_details: true,
             quit: false,
         })
     }
@@ -166,6 +168,7 @@ impl App {
             KeyCode::Up | KeyCode::Char('k') => self.todo_list.select_previous(),
             KeyCode::Down | KeyCode::Char('j') => self.todo_list.select_next(),
             KeyCode::Char(' ') => self.todo_list.toggle_selected(),
+            KeyCode::Char('h') => self.show_details = !self.show_details,
             KeyCode::Char('d') => {
                 self.todo_list.remove_selected();
             }
