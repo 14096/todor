@@ -124,6 +124,14 @@ fn draw_details(f: &mut Frame, area: Rect, app: &App) {
             ]),
         ];
 
+        if let Some(category) = &todo.category {
+            text.push(Line::from(""));
+            text.push(Line::from(vec![
+                Span::styled("Category: ", Style::default().add_modifier(Modifier::BOLD)),
+                Span::styled(category, Style::default().fg(Color::Cyan)),
+            ]));
+        }
+
         if let Some(description) = &todo.description {
             text.push(Line::from(""));
             text.push(Line::from(vec![Span::styled(
@@ -131,14 +139,6 @@ fn draw_details(f: &mut Frame, area: Rect, app: &App) {
                 Style::default().add_modifier(Modifier::BOLD),
             )]));
             text.push(Line::from(description.as_str()));
-        }
-
-        if let Some(category) = &todo.category {
-            text.push(Line::from(""));
-            text.push(Line::from(vec![
-                Span::styled("Category: ", Style::default().add_modifier(Modifier::BOLD)),
-                Span::styled(category, Style::default().fg(Color::Cyan)),
-            ]));
         }
 
         Text::from(text)
