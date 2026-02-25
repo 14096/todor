@@ -164,7 +164,7 @@ fn draw_details(f: &mut Frame, area: Rect, app: &App) {
 fn draw_footer(f: &mut Frame, area: Rect, app: &App) {
     let help_text = match app.input_mode {
         InputMode::Normal => {
-            "Controls: ↑/↓/k/j Navigate | Space Toggle | a Add | e Edit | h Details | d Delete | [/] Resize | q Quit"
+            "↑/↓/k/j Navigate | Space Toggle | a Add | e Edit | h Details | n move down | m move up |d Delete | [/] Resize | q Quit"
         }
         InputMode::Add | InputMode::Edit => {
             "Tab/Shift+Tab/↑/↓: Navigate fields | Enter: Save | Esc: Cancel"

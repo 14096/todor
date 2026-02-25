@@ -178,6 +178,12 @@ impl App {
             KeyCode::Char(']') => {
                 self.split_percentage = (self.split_percentage + 5).min(90);
             }
+            KeyCode::Char('m') => {
+                self.todo_list.move_up();
+            }
+            KeyCode::Char('n') => {
+                self.todo_list.move_down();
+            }
             _ => {}
         }
     }

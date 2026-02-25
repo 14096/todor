@@ -99,6 +99,24 @@ impl TodoList {
     pub fn get_selected(&self) -> Option<&Todo> {
         self.selected.and_then(|index| self.todos.get(index))
     }
+
+    pub fn move_up(&mut self) {
+        if let Some(index) = self.selected {
+            if index > 0 && index < self.todos.len() {
+                self.todos.swap(index, index - 1);
+                self.selected = Some(index - 1);
+            }
+        }
+    }
+
+    pub fn move_down(&mut self) {
+        if let Some(index) = self.selected {
+            if index < self.todos.len().saturating_sub(1) {
+                self.todos.swap(index, index + 1);
+                self.selected = Some(index + 1);
+            }
+        }
+    }
 }
 
 #[cfg(test)]
@@ -184,26 +202,20 @@ mod tests {
         todo_list.add("Todo 2".to_string());
         todo_list.add("Todo 3".to_string());
 
-        // Initially no selection
         assert_eq!(todo_list.selected, None);
 
-        // Select next (should wrap to first)
         todo_list.select_next();
         assert_eq!(todo_list.selected, Some(0));
 
-        // Select next
         todo_list.select_next();
         assert_eq!(todo_list.selected, Some(1));
 
-        // Select next
         todo_list.select_next();
         assert_eq!(todo_list.selected, Some(2));
 
-        // Select next (should wrap to first)
         todo_list.select_next();
         assert_eq!(todo_list.selected, Some(0));
 
-        // Select previous (should wrap to last)
         todo_list.select_previous();
         assert_eq!(todo_list.selected, Some(2));
     }
@@ -275,5 +287,79 @@ mod tests {
         let removed = todo_list.remove_selected();
         assert!(removed.is_none());
         assert_eq!(todo_list.todos.len(), 1);
+    }
+
+    #[test]
+    fn test_move_down() {
+        let mut todo_list = TodoList::new();
+        todo_list.add("Todo 1".to_string());
+        todo_list.add("Todo 2".to_string());
+        todo_list.add("Todo 3".to_string());
+        todo_list.selected = Some(0);
+
+        todo_list.move_down();
+        assert_eq!(todo_list.selected, Some(1));
+        assert_eq!(todo_list.todos[0].title, "Todo 2");
+        assert_eq!(todo_list.todos[1].title, "Todo 1");
+        assert_eq!(todo_list.todos[2].title, "Todo 3");
+    }
+
+    #[test]
+    fn test_move_down_at_bottom() {
+        let mut todo_list = TodoList::new();
+        todo_list.add("Todo 1".to_string());
+        todo_list.add("Todo 2".to_string());
+        todo_list.selected = Some(1);
+
+        todo_list.move_down();
+        assert_eq!(todo_list.selected, Some(1));
+        assert_eq!(todo_list.todos[0].title, "Todo 1");
+        assert_eq!(todo_list.todos[1].title, "Todo 2");
+    }
+
+    #[test]
+    fn test_move_up() {
+        let mut todo_list = TodoList::new();
+        todo_list.add("Todo 1".to_string());
+        todo_list.add("Todo 2".to_string());
+        todo_list.add("Todo 3".to_string());
+        todo_list.selected = Some(2);
+
+        todo_list.move_up();
+        assert_eq!(todo_list.selected, Some(1));
+        assert_eq!(todo_list.todos[0].title, "Todo 1");
+        assert_eq!(todo_list.todos[1].title, "Todo 3");
+        assert_eq!(todo_list.todos[2].title, "Todo 2");
+    }
+
+    #[test]
+    fn test_move_up_at_top() {
+        let mut todo_list = TodoList::new();
+        todo_list.add("Todo 1".to_string());
+        todo_list.add("Todo 2".to_string());
+        todo_list.selected = Some(0);
+
+        todo_list.move_up();
+        assert_eq!(todo_list.selected, Some(0));
+        assert_eq!(todo_list.todos[0].title, "Todo 1");
+        assert_eq!(todo_list.todos[1].title, "Todo 2");
+    }
+
+    #[test]
+    fn test_move_with_no_selection() {
+        let mut todo_list = TodoList::new();
+        todo_list.add("Todo 1".to_string());
+        todo_list.add("Todo 2".to_string());
+        todo_list.selected = None;
+
+        todo_list.move_up();
+        assert_eq!(todo_list.selected, None);
+        assert_eq!(todo_list.todos[0].title, "Todo 1");
+        assert_eq!(todo_list.todos[1].title, "Todo 2");
+
+        todo_list.move_down();
+        assert_eq!(todo_list.selected, None);
+        assert_eq!(todo_list.todos[0].title, "Todo 1");
+        assert_eq!(todo_list.todos[1].title, "Todo 2");
     }
 }
